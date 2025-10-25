@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Juego: Feliz 1 Año — Mia Ly 💖</title>
+<style>
+:root{
+  --accent:#ff5a9e;
+  --bg1:#fff6fb;
+  --bg2:#fff0f6;
+  --card:#ffffffcc;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-tap-highlight-color:transparent}
+body {
+  margin: 0;
+  padding: 0;
+  background-image: url('imagen2.jpg'); /* tu imagen de fondo */
+  background-size: cover;               /* cubre toda la pantalla */
+  background-position: center;          /* centrada */
+  background-repeat: no-repeat;         /* no se repite */
+  background-attachment: fixed;         /* permanece al hacer scroll */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.stage {
+  width: 100%;
+  max-width: 960px;
+  height: 100vh;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6); /* Fondo blanco translúcido */
+  backdrop-filter: blur(10px); /* Efecto de vidrio esmerilado */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+}
+
+header{z-index:5;text-align:center;margin-bottom:6px}
+.title{font-size:clamp(20px,5vw,34px);color:#8b2b44;font-weight:800}
+.subtitle{font-size:14px;color:#6b2b44;margin-top:6px}
+.play-area{position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:8px}
+.hearts-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;z-index:3}
+.heart-btn{
+  width:78px;height:78px;border-radius:50%;background:linear-gradient(180deg,#ff8fb1,#ff5a9e);
+  display:flex;align-items:center;justify-content:center;color:white;font-size:34px;box-shadow:0 8px 18px rgba(139,42,80,0.18);
+  position:relative;touch-action:manipulation;user-select:none;cursor:pointer;
+}
+.heart-label{font-size:12px;margin-top:8px;color:#6b2b44;text-align:center}
+.overlay{
+  position:fixed;inset:0;display:none;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:20;padding:20px;
+}
+.panel{
+  width:min(760px,96%);max-width:760px;background:var(--card);border-radius:14px;padding:18px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.18);
+}
+.phrase{font-size:clamp(16px,3vw,20px);color:#311127;margin:12px 0}
+.choice-row{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:12px;flex-wrap:wrap}
+.btn{
+  padding:10px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer;min-width:110px;
+}
+.btn-yes{background:linear-gradient(180deg,#7ee7c5,#3ec89a);color:#08331b}
+.btn-no{background:linear-gradient(180deg,#ffd6e6,#ff9ac6);color:#6b1f47;position:relative}
+.surprise{display:none;margin-top:12px}
+.surprise h2{color:#d22a6b;margin:6px 0}
+.surprise img{width:88%;max-width:420px;border-radius:12px;box-shadow:0 8px 22px rgba(0,0,0,0.12)}
+.controls{display:flex;gap:10px;justify-content:center;margin-top:10px;z-index:6}
+.file-input{display:none}
+.control-btn{padding:8px 12px;border-radius:10px;background:white;border:1px solid rgba(139,42,80,0.08);cursor:pointer;font-weight:700}
+@media (max-width:460px){
+  .heart-btn{width:68px;height:68px;font-size:30px}
+}
+
+@keyframes floatHearts {
+  0% { transform: translateY(100vh) scale(0.8); opacity: 0.8; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+.heart-bg {
+  position: fixed;
+  bottom: -10vh;
+  font-size: 22px;
+  animation: floatHearts 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+</style>
+</head>
+<body>
+<div class="stage" role="application" aria-label="Juego romántico">
+<header>
+  <div class="title">Feliz 1 Año, Mia Ly 💖</div>
+  <div class="subtitle">Toca un corazón y descubre una frase... 😊</div>
+</header>
+
+<main class="play-area">
+  <div class="hearts-row" id="heartsRow" aria-hidden="false">
+    <div class="heart-wrapper"><div class="heart-btn" data-index="0">❤️</div><div class="heart-label">Toca aquí</div></div>
+    <div class="heart-wrapper"><div class="heart-btn" data-index="1">💘</div><div class="heart-label">Toca aquí</div></div>
+    <div class="heart-wrapper"><div class="heart-btn" data-index="2">💝</div><div class="heart-label">Toca aquí</div></div>
+    <div class="heart-wrapper"><div class="heart-btn" data-index="3">💕</div><div class="heart-label">Toca aquí</div></div>
+    <div class="heart-wrapper"><div class="heart-btn" data-index="4">💓</div><div class="heart-label">Toca aquí</div></div>
+  </div>
+</main>
+
+<div class="controls" style="z-index:6">
+  <label class="control-btn">🎵 Cargar audio<input id="audioLoader" class="file-input" accept="audio/*" type="file"></label>
+  <button id="playAudio" class="control-btn">▶️ Reproducir canción</button>
+</div>
+
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="panel">
+    <div class="phrase" id="phraseText">Frase...</div>
+    <div class="choice-row">
+      <button id="btnYes" class="btn btn-yes">Sí, claro 💚</button>
+      <button id="btnNo" class="btn btn-no">No 😅</button>
+    </div>
+    <div class="surprise" id="surpriseBlock">
+      <h2 id="surpriseTitle">¡Sorpresa!</h2>
+      <img id="surpriseImg" src="" alt="Foto de la sorpresa">
+    </div>
+    <div style="margin-top:12px">
+      <button id="closeModal" class="control-btn">Volver</button>
+    </div>
+  </div>
+</div>
+
+<audio id="audioEl" src="audio.mp3"></audio>
+</div>
+
+<script>
+const phrases = [
+  "Desde que te vi supe que serías mi lugar favorito.",
+  "Contigo aprendí que los pequeños momentos son los grandes recuerdos.",
+  "Tu risa convirtió mis días grises en colores.",
+  "Gracias por amarme con paciencia y ternura todos los días.",
+  "Eres mi sorpresa favorita y mi paz al mismo tiempo."
+];
+
+const photos = [
+  "foto1.jpg",
+  "foto2.jpg",
+  "foto3.jpg", // corazón 3
+  "foto4.jpg",
+  "foto5.jpg"
+];
+
+const hearts = document.querySelectorAll('.heart-btn');
+const overlay = document.getElementById('overlay');
+const phraseText = document.getElementById('phraseText');
+const btnYes = document.getElementById('btnYes');
+const btnNo = document.getElementById('btnNo');
+const surpriseBlock = document.getElementById('surpriseBlock');
+const surpriseImg = document.getElementById('surpriseImg');
+const surpriseTitle = document.getElementById('surpriseTitle');
+const closeModal = document.getElementById('closeModal');
+const audioEl = document.getElementById('audioEl');
+const audioLoader = document.getElementById('audioLoader');
+const playAudio = document.getElementById('playAudio');
+
+let currentIndex = 0;
+
+/* abrir modal */
+hearts.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentIndex = Number(btn.dataset.index);
+    phraseText.textContent = phrases[currentIndex];
+    surpriseBlock.style.display = "none";
+    overlay.style.display = "flex";
+    btnNo.style.transform = 'translate(0,0)';
+  });
+});
+
+/* botón No evasivo */
+function makeNoAvoid() {
+  const move = () => {
+    const rangeX = 140, rangeY = 80;
+    const x = Math.round(Math.random() * rangeX - rangeX / 2);
+    const y = Math.round(Math.random() * rangeY - rangeY / 2);
+    btnNo.style.transition = 'transform 220ms ease';
+    btnNo.style.transform = `translate(${x}px, ${y}px)`;
+    if (navigator.vibrate) navigator.vibrate(20);
+  };
+
+  // permitir clics en PC y celular
+  btnNo.style.position = "relative";
+  btnNo.style.zIndex = "1000"; // asegura que esté encima
+  btnNo.style.pointerEvents = "auto"; // permite clics
+
+  // moverse al acercar o tocar
+  btnNo.addEventListener('mouseenter', move);
+  btnNo.addEventListener('touchstart', ev => {
+    ev.preventDefault();
+    move();
+  }, { passive: false });
+
+  // si logra hacer click, mostrar corazones
+  btnNo.addEventListener('click', () => {
+    const heartOverlay = document.createElement('div');
+    Object.assign(heartOverlay.style, {
+      position: 'fixed',
+      inset: '0',
+      width: '100%',
+      height: '100%',
+      zIndex: '99999',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      flexDirection: 'column',
+
+      //tu foto de fondo
+      backgroundImage: "url('imagen1.jpg')", //se lo puede cambiar la foto con el nombre del archivo
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      backgroundBlendMode: 'darken'
+});
+
+    // texto romántico
+    const text = document.createElement('h1');
+    text.textContent = "💖 TE AMO MI AMORCITHA MI CORAZONCITO DE POLLO 💖";
+    Object.assign(text.style, {
+      color: '#fff',
+      fontSize: 'clamp(24px, 5vw, 40px)',
+      textAlign: 'center',
+      textShadow: '0 0 15px #ff66b2',
+      zIndex: '100000',
+      padding: '20px'
+    });
+    heartOverlay.appendChild(text);
+
+    // corazones cayendo
+    for (let i = 0; i < 80; i++) {
+      const heart = document.createElement('div');
+      heart.textContent = '💗';
+      Object.assign(heart.style, {
+        position: 'absolute',
+        left: Math.random() * 100 + '%',
+        top: '-10%',
+        fontSize: (Math.random() * 20 + 10) + 'px',
+        opacity: Math.random()
+      });
+      heartOverlay.appendChild(heart);
+
+      const duration = Math.random() * 5 + 4;
+      heart.animate([
+        { transform: `translateY(0) rotate(0deg)` },
+        { transform: `translateY(110vh) rotate(${Math.random() * 360}deg)` }
+      ], {
+        duration: duration * 1000,
+        iterations: Infinity,
+        easing: 'linear',
+        delay: Math.random() * 2000
+      });
+    }
+
+    //Boton volver
+    const btnBack = document.createElement('button');
+    btnBack.textContent = "⬅️ Volver";
+    Object.assign(btnBack.style, {
+      position: 'absolute',
+      bottom: '20px',
+      padding: '10px 20px',
+      fontSize: '16px',
+      border: 'none',
+      cursor: 'pointer',
+      zIndex: '100000',
+      backgroundColor: '#fff',
+      color: '#d22a6b',
+      fontWeight: '700'
+    });
+    btnBack.addEventListener('click', () => {
+      heartOverlay.remove();
+    });
+    heartOverlay.appendChild(btnBack);
+
+    document.body.appendChild(heartOverlay);
+  
+  });
+}
+makeNoAvoid();
+
+/* botón Sí rápido evasivo */
+function makeYesAvoid(){
+  const move = ()=>{
+    const rangeX=160, rangeY=100;
+    const x=Math.round(Math.random()*rangeX - rangeX/2);
+    const y=Math.round(Math.random()*rangeY - rangeY/2);
+    btnYes.style.transition='transform 100ms ease';
+    btnYes.style.transform=`translate(${x}px,${y}px)`;
+    if(navigator.vibrate) navigator.vibrate(15);
+  };
+  btnYes.addEventListener('mouseenter', move);
+  btnYes.addEventListener('touchstart', move);
+  btnYes.addEventListener('click', move);
+}
+makeYesAvoid();
+
+/* 💖 Sí muestra cuadro elegante con foto y frase */
+btnYes.addEventListener('click', ()=>{
+  // Crear fondo tipo vidrio
+  const modal = document.createElement('div');
+  Object.assign(modal.style, {
+    position: 'fixed',
+    inset: '0',
+    background: 'rgba(255, 240, 247, 0.2)',
+    backdropFilter: 'blur(12px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: '9999'
+  });
+
+  // Crear el contenedor del contenido
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+    width: '80%',
+    maxWidth: '700px',
+    background: 'rgba(255,255,255,0.8)',
+    borderRadius: '24px',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+    textAlign: 'center',
+    padding: '24px',
+    position: 'relative',
+    animation: 'fadeIn 0.4s ease'
+  });
+
+  // Imagen romántica
+  const img = document.createElement('img');
+  img.src = photos[currentIndex];
+  Object.assign(img.style, {
+    width: '90%',
+    maxWidth: '450px',
+    borderRadius: '16px',
+    boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+    marginBottom: '16px'
+  });
+
+  // Frase
+  const phrase = document.createElement('h2');
+  phrase.textContent = phrases[currentIndex];
+  Object.assign(phrase.style, {
+    color: '#8b2b44',
+    fontSize: 'clamp(18px,3vw,28px)',
+    fontFamily: '"Comic Neue", cursive',
+    margin: '10px 0 20px',
+    textShadow: '0 1px 3px rgba(255,255,255,0.7)'
+  });
+
+  // Botón volver
+  const backBtn = document.createElement('button');
+  backBtn.textContent = '💗 Volver';
+  Object.assign(backBtn.style, {
+    padding: '10px 22px',
+    border: 'none',
+    borderRadius: '14px',
+    background: 'linear-gradient(180deg,#ffb6d9,#ff6fa9)',
+    color: 'white',
+    fontWeight: '700',
+    fontSize: '16px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+    transition: 'transform 0.2s ease'
+  });
+  backBtn.onmouseenter = () => backBtn.style.transform = 'scale(1.05)';
+  backBtn.onmouseleave = () => backBtn.style.transform = 'scale(1)';
+
+  backBtn.addEventListener('click', ()=>{
+    modal.remove();
+  });
+
+  // Agregar todo al DOM
+  box.appendChild(img);
+  box.appendChild(phrase);
+  box.appendChild(backBtn);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  createSimpleConfetti();
+});
+
+/* Cerrar modal */
+closeModal.addEventListener('click', ()=>{
+  overlay.style.display='none';
+  btnNo.style.transform='translate(0,0)';
+  document.querySelector('.choice-row').style.display = 'flex'
+});
+
+/* audio */
+audioLoader.addEventListener('change', e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  audioEl.src=URL.createObjectURL(f);
+  audioEl.load();
+});
+playAudio.addEventListener('click', async ()=>{
+  if(audioEl.paused){ await audioEl.play(); playAudio.textContent="⏸️ Pausar canción"; }
+  else { audioEl.pause(); playAudio.textContent="▶️ Reproducir canción"; }
+});
+
+/* confeti simple */
+function createSimpleConfetti(){
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.textContent=['💖','✨','🎉'][Math.floor(Math.random()*3)];
+    el.style.position='fixed';
+    el.style.left=(50+Math.random()*80-40)+'%';
+    el.style.top=(40+Math.random()*20)+'%';
+    el.style.fontSize=(12+Math.random()*20)+'px';
+    el.style.opacity='0.95';
+    el.style.zIndex=40;
+    el.style.pointerEvents='none';
+    el.style.transition='transform 1.2s ease, opacity 1.2s ease';
+    document.body.appendChild(el);
+    requestAnimationFrame(()=> {
+      el.style.transform = `translateY(-180px) rotate(${Math.random()*720-360}deg)`;
+      el.style.opacity='0';
+    });
+    setTimeout(()=>el.remove(),1400);
+  }
+
+}// 💖 Corazones flotantes en el fondo
+setInterval(() => {
+  const h = document.createElement('div');
+  h.textContent = '💖';
+  h.className = 'heart-bg';
+  h.style.left = Math.random() * 100 + '%';
+  h.style.animationDuration = 6 + Math.random() * 5 + 's';
+  h.style.opacity = Math.random();
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 11000);
+}, 800);
+
+</script>
+
+</body>
+</html>
